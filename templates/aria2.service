@@ -1,0 +1,12 @@
+[Unit]
+Description={{ install_aria_svcdescription }}
+After=network.target
+
+[Service]
+Type=simple
+User={{ install_aria_svcaccount }}
+ExecStart={{ install_aria_svcstart }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

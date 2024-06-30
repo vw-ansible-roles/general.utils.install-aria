@@ -1,0 +1,21 @@
+---
+# handlers file for install-aria
+- name: init aria2 service
+  ansible.builtin.systemd:
+    state: stopped
+    daemon_reload: yes
+    name: "{{ install_aria_svcname }}"
+
+- name: enable aria2 service
+  ansible.builtin.service:
+    name: "{{ install_aria_svcname }}"
+    enabled: yes
+    
+- name: restart aria2 service
+  ansible.builtin.systemd:
+    state: restarted
+    name: "{{ install_aria_svcname }}"
+
+- name: daemon reload
+  ansible.builtin.command:
+    cmd: /usr/bin/systemctl daemon-reload

@@ -1,0 +1,22 @@
+---
+# vars file for install-aria
+
+# Aria2
+install_aria_aria2_cmdstart: "/usr/bin/aria2c --conf-path={{ install_aria_svchomedir }}/.aria2/aria2.conf"
+install_aria_svcname: "aria2"
+install_aria_svcstart: "/usr/local/bin/aria2-start.sh"
+install_aria_svcdescription: "Aria2 (download manager) Service"
+install_aria_svcaccount: "aria2-user"
+install_aria_svchomedir: "/home/{{ install_aria_svcaccount }}"
+install_aria_rpc_listen_all: 'true'
+install_aria_rpc_allow_origin_all: 'true'
+install_aria_rpc_listen_port: '6800'
+
+# AriaNG
+install_aria_ariang_archive: "AriaNg-1.3.7.zip"
+install_aria_ariang_sitename: "aria-ng"
+install_aria_ariang_webdir: "/var/www/html/{{ install_aria_ariang_sitename }}"
+install_aria_nginx_site_destfile: "/etc/nginx/sites-available/{{ install_aria_ariang_sitename }}"
+install_aria_nginx_sitesenabled: "/etc/nginx/sites-enabled"
+
+

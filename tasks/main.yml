@@ -1,0 +1,91 @@
+---
+# tasks file for install-aria
+
+### Aria2 #######################
+
+- name: Install aria2
+  ansible.builtin.apt:
+    name: aria2
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Create aria2 user config directory
+  file:
+    path: "{{ install_aria_svchomedir }}/.aria2"
+    state: directory
+    owner: "{{ install_aria_svcaccount }}"
+    group: root
+    mode: u=rwx,g=rwx,o-rwx
+
+- name: Template aria2 config file
+  ansible.builtin.template:
+    src: aria2.conf
+    dest: "{{ install_aria_svchomedir }}/.aria2/aria2.conf"
+    owner: "{{ install_aria_svcaccount }}"
+    group: root
+    mode: u=rw,g=rw,o=-rwx
+  notify:
+    - init aria2 service
+    - enable aria2 service
+    - daemon reload
+    - restart aria2 service
+
+- name: Edit Aria2 startup script
+  ansible.builtin.template:
+    src: aria2-start.sh
+    dest: "{{ install_aria_svcstart }}"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Edit Aria2 startup service
+  ansible.builtin.template:
+    src: aria2.service
+    dest: "/etc/systemd/system/{{ install_aria_svcname }}.service"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - init aria2 service
+    - enable aria2 service
+    - daemon reload
+    - restart aria2 service
+
+- name: Flush handlers
+  meta: flush_handlers
+
+
+### Aria NG #######################
+
+- name: Install nginx
+  ansible.builtin.apt:
+    name: nginx
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Extract ariang
+  ansible.builtin.unarchive:
+    src: "{{ install_aria_ariang_archive }}"
+    dest: "{{ install_aria_ariang_webdir }}"
+
+- name: Template nginx site file
+  ansible.builtin.template:
+    src: nginx_ariang.j2
+    dest: "{{ install_aria_nginx_site_destfile }}"
+    owner: root
+    group: root
+    mode: u=rw,g=r,o=r
+
+# sudo ln -s /etc/nginx/sites-available/ariang /etc/nginx/sites-enabled/
+- name: Create a symbolic link to enable site
+  ansible.builtin.file:
+    src: "{{ install_aria_nginx_site_destfile }}"
+    dest: "{{ install_aria_nginx_sitesenabled }}/{{ install_aria_ariang_sitename }}"
+    state: link
+
+- name: Restart service nginx, in all cases
+  ansible.builtin.service:
+    name: nginx
+    state: restarted
