@@ -2,5 +2,6 @@
 # defaults file for install-aria
 install_aria_nginx_port: 80
 install_aria_nginx_servername: "nas-server"
+install_aria_ariang_location: "download" # url location e.g http://nas-server/download
 install_aria_rpc_secret: 'myP@55w0rd' # leave blank or null to disable authentication
 install_aria_download_dir: '/home/{{ install_aria_svcaccount }}'

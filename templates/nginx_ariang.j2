@@ -2,7 +2,7 @@ server {
     listen {{ install_aria_nginx_port }};
     server_name {{ install_aria_nginx_servername }};
 
-    location /ariang/ {
+    location /{{ install_aria_ariang_location }}/ {
         alias {{ install_aria_ariang_webdir }}/;
         index index.html;
         try_files $uri $uri/ /index.html;
