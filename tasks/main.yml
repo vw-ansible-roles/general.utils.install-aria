@@ -56,7 +56,12 @@
   meta: flush_handlers
 
 
-### Aria NG #######################
+### Install Nginx and unarchive WebUI files #######################
+
+- name: Fail if mode var value is not 'mainsite', 'virtualhost', or 'include'
+  ansible.builtin.fail:
+    msg: "The variable 'install_aria_nginx_mode' must be either 'mainsite', 'virtualhost', or 'include'. Current value: {{ install_aria_nginx_mode }}"
+  when: install_aria_nginx_mode not in ['mainsite', 'virtualhost', 'include']
 
 - name: Install nginx
   ansible.builtin.apt:
@@ -70,21 +75,63 @@
     src: "{{ install_aria_ariang_archive }}"
     dest: "{{ install_aria_ariang_webdir }}"
 
-- name: Template nginx site file
-  ansible.builtin.template:
-    src: nginx_ariang.j2
-    dest: "{{ install_aria_nginx_site_destfile }}"
-    owner: root
-    group: root
-    mode: u=rw,g=r,o=r
 
-# sudo ln -s /etc/nginx/sites-available/ariang /etc/nginx/sites-enabled/
-- name: Create a symbolic link to enable site
-  ansible.builtin.file:
-    src: "{{ install_aria_nginx_site_destfile }}"
-    dest: "{{ install_aria_nginx_sitesenabled }}/{{ install_aria_ariang_sitename }}"
-    state: link
+### 'mainsite' mode : Install Aria NG as server root #######################
+- name: Install WebUI as server root
+  block:
 
+    - name: Template nginx site file
+      ansible.builtin.template:
+        src: nginx_mainsite.j2
+        dest: "/etc/nginx/sites-available/default"
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+
+  when: install_aria_nginx_mode == 'mainsite'
+
+### 'include' mode : set as location in default nginx config file  #######################
+- name: Install WebUI under specified path
+  block:
+
+    - name: Add a block of text after "server {"
+      blockinfile:
+        path: /etc/nginx/sites-available/default
+        insertafter: '^\s*server\s*\{'
+        block: |
+                location /{{ install_aria_ariang_location }}/ {
+                    alias {{ install_aria_ariang_webdir }}/;
+                    index index.html;
+                    #try_files $uri $uri/ /index.html;
+                }
+        marker: "# {mark} ANSIBLE MANAGED BLOCK FOR ARIA2 WEBUI"
+
+  when: install_aria_nginx_mode == 'include'
+
+
+### 'virtualhost' mode : set webUI configuration in separate site file #######################
+- name: Install WebUI as virtual host in separate site file
+  block:
+
+    - name: Template nginx site file
+      ansible.builtin.template:
+        src: nginx_virtualhost.j2
+        dest: "{{ install_aria_nginx_site_destfile }}"
+        owner: root
+        group: root
+        mode: u=rw,g=r,o=r
+
+    # sudo ln -s /etc/nginx/sites-available/ariang /etc/nginx/sites-enabled/
+    - name: Create a symbolic link to enable site
+      ansible.builtin.file:
+        src: "{{ install_aria_nginx_site_destfile }}"
+        dest: "{{ install_aria_nginx_sitesenabled }}/{{ install_aria_ariang_sitename }}"
+        state: link
+
+  when: install_aria_nginx_mode == 'virtualhost'
+  
+
+### Restart Nginx  #######################
 - name: Restart service nginx, in all cases
   ansible.builtin.service:
     name: nginx

@@ -1,7 +1,8 @@
 ---
 # defaults file for install-aria
 install_aria_nginx_port: 80
-install_aria_nginx_servername: "nas-server"
-install_aria_ariang_location: "download" # url location e.g http://nas-server/download
-install_aria_rpc_secret: 'myP@55w0rd' # leave blank or null to disable authentication
+install_aria_nginx_mode: "include" # 'mainsite' to set as main server (overwrites default file), 'include' to set as location in default, or 'virtualhost' for separate file
+install_aria_nginx_servername: "nas-server" # server name. Set to "_" for wildcard (beware of conflicts in 'virtualhost' mode); not used with 'include' mode
+install_aria_ariang_location: "download" # path for web UI, e.g http://nas-server/download ; not used with 'mainsite' mode
+install_aria_rpc_secret: 'myP@55w0rd' # leave blank to disable authentication
 install_aria_download_dir: '/home/{{ install_aria_svcaccount }}'
