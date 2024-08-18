@@ -70,11 +70,18 @@
     update_cache: yes
     cache_valid_time: 3600
 
+- name: Create Aria NG directory
+  ansible.builtin.file:
+    path: "{{ install_aria_ariang_webdir }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
 - name: Extract ariang
   ansible.builtin.unarchive:
     src: "{{ install_aria_ariang_archive }}"
     dest: "{{ install_aria_ariang_webdir }}"
-
 
 ### 'mainsite' mode : Install Aria NG as server root #######################
 - name: Install WebUI as server root
